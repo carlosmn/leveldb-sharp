@@ -142,6 +142,69 @@ namespace LevelDB
         }
 
         [Test]
+        public void GetBenchmark()
+        {
+            int runs = 100000;
+            string key1 = "key1", key2 = "key2";
+            DateTime start, stop;
+
+            Database.Put(null, "key1", "value1");
+
+            start = DateTime.UtcNow;
+            for (var i = 0; i < runs; i++) {
+                var value = Database.Get(key1);
+            }
+            stop = DateTime.UtcNow;
+
+            var total = (stop - start).TotalMilliseconds;
+            Console.WriteLine(
+                "{0}: avg: {1:0.00} ms runs: {2} took: {3:0.00} ms",
+                "Get     ",
+                total / runs,
+                runs,
+                total
+                );
+
+            start = DateTime.UtcNow;
+            for (var i = 0; i < runs; i++) {
+                using (var iter = new Iterator(Database, new ReadOptions()))
+                {
+                    iter.Seek(key1);
+                    var value = iter.Value;
+                }
+            }
+            stop = DateTime.UtcNow;
+
+            total = (stop - start).TotalMilliseconds;
+            Console.WriteLine(
+                "{0}: avg: {1:0.00} ms runs: {2} took: {3:0.00} ms",
+                "GetIters",
+                total / runs,
+                runs,
+                total
+                );
+
+            start = DateTime.UtcNow;
+            using (var iter = new Iterator(Database, new ReadOptions()))
+            {
+                for (var i = 0; i < runs; i++) {
+                    iter.Seek(key1);
+                    var value = iter.Value;
+                }
+            }
+            stop = DateTime.UtcNow;
+
+            total = (stop - start).TotalMilliseconds;
+            Console.WriteLine(
+                "{0}: avg: {1:0.00} ms runs: {2} took: {3:0.00} ms",
+                "GetIter ",
+                total / runs,
+                runs,
+                total
+                );
+        }
+
+        [Test]
         public void Delete()
         {
             Database.Put("key1", "value1");
