@@ -142,6 +142,20 @@ namespace LevelDB
         }
 
         [Test]
+        public void GetStream ()
+        {
+            Database.Put(null, "key1", "value1");
+            var stream1 = Database.GetStream("key1");
+            var value1 = new StreamReader(stream1).ReadToEnd();
+            Assert.AreEqual("value1", value1);
+
+            Database.Put(null, "key2", "value2");
+            var stream2 = Database.GetStream("key2");
+            var value2 = new StreamReader(stream2).ReadToEnd();
+            Assert.AreEqual("value2", value2);
+        }
+
+        [Test]
         public void Delete()
         {
             Database.Put("key1", "value1");

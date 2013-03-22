@@ -30,6 +30,7 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -195,6 +196,33 @@ namespace LevelDB
         {
             return Get(null, key);
         }
+
+        public Stream GetStream (ReadOptions options, string key)
+        {
+            CheckDisposed ();
+            if (options == null) {
+                options = new ReadOptions ();
+            }
+
+            var iter = new Iterator(this, options);
+            iter.Seek(key);
+
+            UIntPtr valueLength;
+            var valuePtr = Native.leveldb_iter_value(iter.Handle, out valueLength);
+            if (valuePtr == IntPtr.Zero || valueLength == UIntPtr.Zero) {
+                return null;
+            }
+
+            unsafe {
+                return new UnmanagedMemoryStream((byte *)valuePtr, (long)valueLength);
+            }
+        }
+
+        public Stream GetStream (string key)
+        {
+            return GetStream(null, key);
+        }
+
 
         IEnumerator IEnumerable.GetEnumerator()
         {
